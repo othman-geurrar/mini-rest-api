@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    // Target modern Node.js features
+    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    
+    // Output directory for compiled JavaScript
+    "outDir": "./dist",
+    "rootDir": "./src",
+    
+    // Enable strict type-checking options
+    "strict": true, 
+    "esModuleInterop": true, 
+    "skipLibCheck": true, 
+    "forceConsistentCasingInFileNames": true, 
+    
+    // Module resolution
+    "resolveJsonModule": true,
+    
+    // Source map and declaration files (for libraries)
+    "sourceMap": true, 
+    "declaration": true, 
+    
+    // Allow non-TS files to be included
+    "allowJs": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
