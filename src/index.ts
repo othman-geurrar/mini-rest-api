@@ -6,14 +6,19 @@ import summariesRouter from './routes/summaries.js';
 import { validateApiKey } from './utils/validateApiKey.js';
 import connectDB from './db/mongodb.js';
 import authRouter from './routes/auth.js';
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "../docs/swagger.json" with { type: "json" };
+import errorHandler from './middlewares/error.middlware.js';
 
 const PORT: number = Number(process.env.PORT) || 3000;
 
 const app: Express = express();
 
 app.use(express.json());
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(validateApiKey);
+
+
 
 app.use('/patients', patientsRouter);
 app.use('/notes', notesRouter);
@@ -21,6 +26,8 @@ app.use('/summaries', summariesRouter);
 app.use('/auth', authRouter);
 
 app.get('/health', (req: Request, res: Response) => res.json({ status: 'ok' }));
+
+app.use(errorHandler);
 
 connectDB()
   .then(() => {

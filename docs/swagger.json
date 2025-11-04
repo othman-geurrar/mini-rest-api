@@ -1,0 +1,471 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Health Assistant API",
+      "description": "API for managing patient data, voice notes, and AI-generated summaries.",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "/",
+        "description": "Base API Path"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Auth",
+        "description": "User authentication (Sign Up/Sign In)"
+      },
+      {
+        "name": "Patients",
+        "description": "Patient records and user management"
+      },
+      {
+        "name": "Voice Notes",
+        "description": "CRUD operations for voice notes, and triggering AI processes"
+      },
+      {
+        "name": "Summaries",
+        "description": "CRUD operations for AI-generated summaries"
+      },
+      {
+        "name": "System",
+        "description": "Health check"
+      }
+    ],
+    "paths": {
+      "/auth/sign-up": {
+        "post": {
+          "tags": ["Auth", "Patients"],
+          "summary": "Register a new Patient user (Public)",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientRegister"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": { "description": "User registered successfully" },
+            "400": { "description": "Validation error (Zod)" },
+            "409": { "description": "User already exists" }
+          }
+        }
+      },
+      "/auth/sign-in": {
+        "post": {
+          "tags": ["Auth"],
+          "summary": "Sign in a Patient user (Public)",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientLogin"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": { "description": "Sign in successful, returns JWT" },
+            "400": { "description": "Validation error (Zod)" },
+            "401": { "description": "Invalid credentials" }
+          }
+        }
+      },
+      "/patients": {
+        "get": {
+          "tags": ["Patients"],
+          "summary": "Get all Patient records",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "List of patients" },
+            "401": { "description": "Unauthorized" }
+          }
+        },
+        "post": {
+          "tags": ["Patients"],
+          "summary": "Alias for /auth/sign-up (Register Patient)",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PatientRegister" }
+              }
+            }
+          },
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "201": { "description": "Patient created successfully" }
+          }
+        }
+      },
+      "/patients/{id}": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Patient ID (MongoDB ObjectId)"
+          }
+        ],
+        "get": {
+          "tags": ["Patients"],
+          "summary": "Get a Patient by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Patient data" },
+            "404": { "description": "Patient not found" }
+          }
+        },
+        "put": {
+          "tags": ["Patients"],
+          "summary": "Update a Patient by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PatientUpdate" }
+              }
+            }
+          },
+          "responses": {
+            "200": { "description": "Patient updated successfully" }
+          }
+        },
+        "delete": {
+          "tags": ["Patients"],
+          "summary": "Delete a Patient by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Patient deleted successfully" }
+          }
+        }
+      },
+      "/notes": {
+        "get": {
+          "tags": ["Voice Notes"],
+          "summary": "Get all Voice Notes",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "List of voice notes" }
+          }
+        },
+        "post": {
+          "tags": ["Voice Notes"],
+          "summary": "Create Voice Note and trigger AI summary",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VoiceNoteCreate" }
+              }
+            }
+          },
+          "responses": {
+            "201": { "description": "Note created and AI summary process initiated" }
+          }
+        }
+      },
+      "/notes/{id}": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Voice Note ID (MongoDB ObjectId)"
+          }
+        ],
+        "get": {
+          "tags": ["Voice Notes"],
+          "summary": "Get a Voice Note by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Voice Note data" }
+          }
+        },
+        "put": {
+          "tags": ["Voice Notes"],
+          "summary": "Update a Voice Note by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/VoiceNoteUpdate" }
+              }
+            }
+          },
+          "responses": {
+            "200": { "description": "Voice Note updated successfully" }
+          }
+        },
+        "delete": {
+          "tags": ["Voice Notes"],
+          "summary": "Delete a Voice Note by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Voice Note deleted successfully" }
+          }
+        }
+      },
+      "/notes/patient/{patientId}": {
+        "get": {
+          "tags": ["Voice Notes"],
+          "summary": "Get all Voice Notes for a specific Patient",
+          "parameters": [
+            {
+              "name": "patientId",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" },
+              "description": "Patient ID (MongoDB ObjectId)"
+            },
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "List of voice notes for the patient" }
+          }
+        }
+      },
+      "/summaries": {
+        "get": {
+          "tags": ["Summaries"],
+          "summary": "Get all Summaries",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "List of summaries" }
+          }
+        },
+        "post": {
+          "tags": ["Summaries"],
+          "summary": "Create a Summary (Trigger AI)",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SummaryCreate" }
+              }
+            }
+          },
+          "responses": {
+            "201": { "description": "Summary created successfully" }
+          }
+        }
+      },
+      "/summaries/{id}": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Summary ID (MongoDB ObjectId)"
+          }
+        ],
+        "get": {
+          "tags": ["Summaries"],
+          "summary": "Get a Summary by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Summary data" }
+          }
+        },
+        "put": {
+          "tags": ["Summaries"],
+          "summary": "Update a Summary by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SummaryUpdate" }
+              }
+            }
+          },
+          "responses": {
+            "200": { "description": "Summary updated successfully" }
+          }
+        },
+        "delete": {
+          "tags": ["Summaries"],
+          "summary": "Delete a Summary by ID",
+          "parameters": [
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Summary deleted successfully" }
+          }
+        }
+      },
+      "/summaries/note/{noteId}": {
+        "get": {
+          "tags": ["Summaries"],
+          "summary": "Get Summary linked to a specific Voice Note",
+          "parameters": [
+            {
+              "name": "noteId",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" },
+              "description": "Voice Note ID (MongoDB ObjectId)"
+            },
+            { "$ref": "#/components/parameters/XApiKeyHeader" }
+          ],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": { "description": "Summary data for the note" },
+            "404": { "description": "Summary not found for note" }
+          }
+        }
+      },
+      "/health": {
+        "get": {
+          "tags": ["System"],
+          "summary": "Server health check (Public)",
+          "responses": {
+            "200": { "description": "Server is running (status: ok)" }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "PatientRegister": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "format": "email" },
+            "password": { "type": "string", "minLength": 6 },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" }
+          },
+          "required": ["email", "password", "firstName", "lastName"]
+        },
+        "PatientLogin": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "format": "email" },
+            "password": { "type": "string", "minLength": 6 }
+          },
+          "required": ["email", "password"]
+        },
+        "PatientUpdate": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "format": "email" },
+            "password": { "type": "string", "minLength": 6 },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" }
+          }
+        },
+        "VoiceNoteCreate": {
+          "type": "object",
+          "properties": {
+            "patientId": { "type": "string", "description": "MongoDB ID of the patient" },
+            "title": { "type": "string", "maxLength": 200 },
+            "duration": { "type": "number", "minimum": 0, "format": "int32" }
+          },
+          "required": ["patientId", "title", "duration"]
+        },
+        "VoiceNoteUpdate": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "maxLength": 200 },
+            "duration": { "type": "number", "minimum": 0, "format": "int32" }
+          }
+        },
+        "SummaryCreate": {
+          "type": "object",
+          "properties": {
+            "noteId": { "type": "string", "description": "MongoDB ID of the Voice Note to summarize" }
+          },
+          "required": ["noteId"]
+        },
+        "SummaryUpdate": {
+          "type": "object",
+          "properties": {
+            "content": { "type": "string", "description": "The updated summary text" }
+          },
+          "required": ["content"]
+        }
+      },
+      "parameters": {
+        "XApiKeyHeader": {
+          "name": "x-api-key",
+          "in": "header",
+          "description": "API Key required by middleware validateApiKey (header: x-api-key)",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      },
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT",
+          "description": "Enter the JWT token obtained after sign-in (e.g., Bearer TOKEN)"
+        }
+      }
+    },
+    "security": [
+      {}
+    ]
+  }  
